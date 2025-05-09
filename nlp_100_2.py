@@ -10,9 +10,6 @@ hightemp.txtは，日本の最高気温の記録を「都道府県」「地点�
 
 
 
-15. 末尾のN行を出力
-
-自然数Nをコマンドライン引数などの手段で受け取り，入力のうち末尾のN行だけを表示せよ．確認にはtailコマンドを用いよ．
 
 16. ファイルをN分割する
 
@@ -185,3 +182,22 @@ def check_print_head(n: int):#, input_fullpath=DATA_FULLPATH, input_file=sys.std
     for i in range(n):
         s_line = sio.readline().strip('\n')
         assert cmd_lines[i] == s_line
+from collections import deque
+#15. 末尾のN行を出力
+def print_tail(n: int, input_fullpath=DATA_FULLPATH, encoding='utf8', output=sys.stdout):
+    '''Print tailing N(natural number) lines
+    Tail to check
+    Parameters
+    ----------
+    n : int
+        how many tail lines to print
+    Returns
+    -------
+    None.
+    '''
+    qu = deque(maxlen=n)
+    with input_fullpath.open(encoding=encoding) as fi:
+        while (input_line:=fi.readline()):
+            qu.append(input_line)
+    for n in range(len(qu)):
+        print(qu.popleft(), file=output, end='')
