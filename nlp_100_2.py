@@ -9,12 +9,6 @@ Created on Fri May  9 08:46:07 2025
 hightemp.txtは，日本の最高気温の記録を「都道府県」「地点」「℃」「日」のタブ区切り形式で格納したファイルである．以下の処理を行うプログラムを作成し，hightemp.txtを入力ファイルとして実行せよ．さらに，同様の処理をUNIXコマンドでも実行し，プログラムの実行結果を確認せよ．
 
 
-13. col1.txtとcol2.txtをマージ
-12で作ったcol1.txtとcol2.txtを結合し，元のファイルの1列目と2列目をタブ区切りで並べたテキストファイルを作成せよ．確認にはpasteコマンドを用いよ．
-
-14. 先頭からN行を出力
-
-自然数Nをコマンドライン引数などの手段で受け取り，入力のうち先頭のN行だけを表示せよ．確認にはheadコマンドを用いよ．
 
 15. 末尾のN行を出力
 
@@ -37,12 +31,13 @@ hightemp.txtは，日本の最高気温の記録を「都道府県」「地点�
 各行の1列目の文字列の出現頻度を求め，その高い順に並べて表示せよ．確認にはcut, uniq, sortコマンドを用いよ．
 
 """
-
+import sys, os
 from subprocess import run
 from pathlib import Path
 
 DATA_DIR = Path('DATA')
-DATA_FULLPATH = DATA_DIR / 'hightemp.txt'
+DATA_FILE = 'hightemp.txt'
+DATA_FULLPATH = DATA_DIR / DATA_FILE
 
 def run_cmd(cmd: str, cwd=DATA_DIR):
     """Execute a command in a terminal
@@ -138,14 +133,13 @@ def col_lines(input_=DATA_FULLPATH, outputs=('col1.txt', 'col2.txt'), encoding='
 
 # 13.
 def merge_files(input_=DATA_FULLPATH, inputs=('col1.txt', 'col2.txt'), output='col1-2.txt', encoding='utf8'):
-    '''col1.txtとcol2.txtをマージ: 12で作ったcol1.txtとcol2.txtを結合し，元のファイルの1列目と2列目をタブ区切りで並べたテキストファイルを作成
-    確認にはpasteコマンドを用
+    '''Merge `col1.txt` and `col2.txt` every line alternately spacing with a tab character:
+        12で作ったcol1.txtとcol2.txtを結合し，元のファイルの1列目と2列目をタブ区切りで並べたテキストファイルを作成
+    Check using `paste` command
     
-
     Returns
     -------
     None.
-
     '''
     def fullpath(f: str):
         return input_.parent / f
@@ -163,3 +157,31 @@ def merge_files(input_=DATA_FULLPATH, inputs=('col1.txt', 'col2.txt'), output='c
     breakpoint()
     for n in range(len(run_lines)):
         assert run_lines[n] == rf_lines[n]
+
+# 14. Output n lines from the head
+def print_head(n: int, input_fullpath=DATA_FULLPATH, encoding='utf8', output=sys.stdout):
+    '''Get a natural number N using command-line argument, then print heading N lines
+        - Check with `head` command
+        Parameters
+        ----------
+        n : int
+            count of lines heading in the file
+        Returns
+        -------
+        None.
+    '''
+    with input_fullpath.open(encoding=encoding) as fi:
+        while n and (input_line:=fi.readline()):
+            print(input_line, file=output, end='')
+            n -= 1
+from io import StringIO
+def check_print_head(n: int):#, input_fullpath=DATA_FULLPATH, input_file=sys.stdin, encoding='utf8'):
+    sio = StringIO()
+    print_head(n, output=sio)
+    cmd = f"head -n {n} {DATA_FILE}"
+    cmd_result = run_cmd(cmd)
+    sio.seek(0)
+    cmd_lines = cmd_result.split('\n')
+    for i in range(n):
+        s_line = sio.readline().strip('\n')
+        assert cmd_lines[i] == s_line
