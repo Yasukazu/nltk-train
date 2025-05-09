@@ -44,49 +44,65 @@ from pathlib import Path
 DATA_DIR = Path('DATA')
 DATA_FULLPATH = DATA_DIR / 'hightemp.txt'
 
+def run_cmd(cmd: str, cwd=DATA_DIR):
+    """Execute a command in a terminal
+    
+
+    Parameters
+    ----------
+    cmd : str
+        command line text
+
+    Returns
+    -------
+    string
+        stdout of the result of the executed command
+
+    """
+    return run(cmd, capture_output=True, shell=True, text=True, check=True, cwd=cwd).stdout
+
 # 10. 行数のカウント
-def count_lines(f: str):
-    '''行数をカウントせよ．確認にはwcコマンドを用いよ．
+def count_lines(f: str, encoding='utf8'):
+    '''Count lines.  Check with `wc`.
     '''
     pth = Path(f)
     n = 0
-    with pth.open() as fi:
+    with pth.open(encoding=encoding) as fi:
         while fi.readline():
             n += 1
-    data = run(f"wc {f}", capture_output=True, shell=True, text=True)
-    assert n == int(data.stdout.split()[0])
+    cmd_result = run_cmd(f"wc {f}")
+    assert n == int(cmd_result.split()[0])
     return n
 # 11. タブをスペースに置換
-
-def conv_tab_to_spc(f: str):
+def conv_tab_to_spc(f: str, encoding='utf8'):
     '''タブ1文字につきスペース1文字に置換せよ．確認にはsedコマンド，trコマンド，もしくはexpandコマンドを用いよ．
     '''
     pth = Path(f)
     lines = []
-    with pth.open() as fi:
+    with pth.open(encoding=encoding) as fi:
         while (line:=fi.readline()):
             lines.append(line.replace('\t', ' ').strip())
-    data = run(f"sed -e 's/\t/ /g' {f}", capture_output=True, shell=True, text=True)
-    cmd_lines = [s.strip() for s in data.stdout.split('\n')]
+    cmd_result = run_cmd(f"sed -e 's/\t/ /g' {f}")
+    cmd_lines = [s.strip() for s in cmd_result.split('\n')]
     for n, line in enumerate(lines):
         assert line == cmd_lines[n]
     return lines
 
-def run_cmd(cmd: str):
-    return run(cmd, capture_output=True, shell=True, text=True).stdout
-
-# 12. 1列目をcol1.txtに，2列目をcol2.txtに保存
-# 各行の1列目だけを抜き出したものをcol1.txtに，2列目だけを抜き出したものをcol2.txtとしてファイルに保存せよ．
-# 確認にはcutコマンドを用いよ．
-def col_lines(input=DATA_FULLPATH, outputs=['col1.txt', 'col2.txt']):
-    """
+# 12.
+def col_lines(input_=DATA_FULLPATH, outputs=('col1.txt', 'col2.txt'), encoding='utf8'):
+    """Extract 1st and 2nd columns in every line
+    
+    Saves the first column and the second column of every line into files named 'col1.txt' and 'col2.txt', respectively.
+    Uses `cut` command to check this function.
+    
     Returns
     -------
-    as files with names in inputs where the same directory of input
+    a list of output lines
+     * Files with names in inputs where the same directory of inputs are also generated.
     """
     line_count = 0
     output_lines = ([],[])
-    with input.open('r') as inp:
+    with input_.open(encoding=encoding) as inp:
         while line:=inp.readline():
             line_count += 1
             cols = line.split()
@@ -99,10 +115,10 @@ def col_lines(input=DATA_FULLPATH, outputs=['col1.txt', 'col2.txt']):
     output_fullpath_list = [input.parent / name for name in outputs]
     # write outputs to files
     for n in range(2):
-        with output_fullpath_list[n].open('w') as out:
+        with output_fullpath_list[n].open('w', encoding=encoding) as out:
             out.write('\n'.join(output_lines[n]))
     # check output files
-    output_lines = [output_fullpath_list[n].open().read().split('\n') for n in range(2)]
+    output_lines = [output_fullpath_list[n].open(encoding=encoding).read().split('\n') for n in range(2)]
     for n in range(2):
         assert len(output_lines[n]) == line_count
     # check by a command
@@ -119,10 +135,31 @@ def col_lines(input=DATA_FULLPATH, outputs=['col1.txt', 'col2.txt']):
         for i in range(2):
             assert cmd_cols[i] == output_lines[i][n]
     return output_lines
-                
+
+# 13.
+def merge_files(input_=DATA_FULLPATH, inputs=('col1.txt', 'col2.txt'), output='col1-2.txt', encoding='utf8'):
+    '''col1.txtとcol2.txtをマージ: 12で作ったcol1.txtとcol2.txtを結合し，元のファイルの1列目と2列目をタブ区切りで並べたテキストファイルを作成
+    確認にはpasteコマンドを用
     
-    
-    
-    '''13. col1.txtとcol2.txtをマージ: 12で作ったcol1.txtとcol2.txtを結合し，元のファイルの1列目と2列目をタブ区切りで並べたテキストファイルを作成せよ．確認にはpasteコマンドを用いよ．    '''
-    
-    
+
+    Returns
+    -------
+    None.
+
+    '''
+    def fullpath(f: str):
+        return input_.parent / f
+    input_lines = [[r.strip('\n') for r in fullpath(input).open(encoding=encoding).readlines()] for input in inputs]
+    assert len(input_lines[0]) == len(input_lines[1])
+    output_fullpath = fullpath(output)
+    with output_fullpath.open('w', encoding=encoding) as wf:
+        for c1, c2 in zip(*input_lines):
+            print(f"{c1}\t{c2}", file=wf)
+    cmd = f"paste {inputs[0]} {inputs[1]}"
+    run_result = run_cmd(cmd)
+    run_lines = [r for r in run_result.split('\n') if r.replace('\n', '')]
+    rf_lines = [r.strip('\n') for r in output_fullpath.open(encoding=encoding).readlines() if r.replace('\n', '')]
+    assert len(run_lines) == len(rf_lines)
+    breakpoint()
+    for n in range(len(run_lines)):
+        assert run_lines[n] == rf_lines[n]
