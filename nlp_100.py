@@ -56,27 +56,3 @@ def rand_splits(s: str):
             rnd_md = rand_str(md)
             out.append(hd + rnd_md + tl)
     return ' '.join(out)
-#import os
-from subprocess import run
-from pathlib import Path
-def count_lines(f: str):
-    pth = Path(f)
-    n = 0
-    with pth.open() as fi:
-        while fi.readline():
-            n += 1
-    data = run(f"wc {f}", capture_output=True, shell=True, text=True)
-    assert n == int(data.stdout.split()[0])
-    return n
-
-def conv_tab_to_spc(f: str):
-    pth = Path(f)
-    lines = []
-    with pth.open() as fi:
-        while (line:=fi.readline()):
-            lines.append(line.replace('\t', ' ').strip())
-    data = run(f"sed -e 's/\t/ /g' {f}", capture_output=True, shell=True, text=True)
-    cmd_lines = [s.strip() for s in data.stdout.split('\n')]
-    for n, line in enumerate(lines):
-        assert line == cmd_lines[n]
-    return lines
