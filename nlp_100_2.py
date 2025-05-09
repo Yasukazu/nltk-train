@@ -11,9 +11,6 @@ hightemp.txtは，日本の最高気温の記録を「都道府県」「地点�
 
 
 
-16. ファイルをN分割する
-
-自然数Nをコマンドライン引数などの手段で受け取り，入力のファイルを行単位でN分割せよ．同様の処理をsplitコマンドで実現せよ．
 
 17. １列目の文字列の異なり
 
@@ -172,7 +169,7 @@ def print_head(n: int, input_fullpath=DATA_FULLPATH, encoding='utf8', output=sys
             print(input_line, file=output, end='')
             n -= 1
 from io import StringIO
-def check_print_head(n: int):#, input_fullpath=DATA_FULLPATH, input_file=sys.stdin, encoding='utf8'):
+def check_print_head(n: int):
     sio = StringIO()
     print_head(n, output=sio)
     cmd = f"head -n {n} {DATA_FILE}"
@@ -201,3 +198,48 @@ def print_tail(n: int, input_fullpath=DATA_FULLPATH, encoding='utf8', output=sys
             qu.append(input_line)
     for n in range(len(qu)):
         print(qu.popleft(), file=output, end='')
+
+def check_print_tail(n: int):
+    sio = StringIO()
+    print_tail(n, output=sio)
+    cmd = f"tail -n {n} {DATA_FILE}"
+    cmd_result = run_cmd(cmd)
+    sio.seek(0)
+    cmd_lines = cmd_result.split('\n')
+    for i in range(n):
+        s_line = sio.readline().strip('\n')
+        assert cmd_lines[i] == s_line
+# 16. ファイルをN分割する
+def split_file(n: int, input_fullpath=DATA_FULLPATH, encoding='utf8', output_prefix='x-', max_files=100, overwrite=False):
+    '''自然数Nをコマンドライン引数などの手段で受け取り，入力のファイルを行単位でN分割
+    `split`
+    Parameters
+    ----------
+    int : n
+        split count
+    Returns
+    -------
+    None.
+
+    '''
+    class EndLoop(Exception):
+        pass
+    try:
+        with input_fullpath.open(encoding=encoding) as fi:
+            for file_count in range(max_files):
+                output_stem = f"{output_prefix}{file_count + 1}"
+                output_fullpath = input_fullpath.parent / output_stem
+                if not overwrite:
+                    if output_fullpath.exists():
+                        raise FileExistsError(f"{output_fullpath=} exists!")
+                output_count = 0
+                with output_fullpath.open('w') as wf:
+                    while output_count < n:
+                        input_line = fi.readline()
+                        if not input_line:
+                            raise EndLoop()
+                        print(input_line, file=wf, end='')
+                        output_count += 1
+    except EndLoop:
+        pass
+            
