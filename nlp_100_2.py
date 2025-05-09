@@ -222,18 +222,21 @@ def split_file(n: int, input_fullpath=DATA_FULLPATH, encoding='utf8', output_pre
     None.
 
     '''
+    mode = 'x' if overwrite else 'w'
     class EndLoop(Exception):
         pass
+    putout_files = []
     try:
         with input_fullpath.open(encoding=encoding) as fi:
             for file_count in range(max_files):
-                output_stem = f"{output_prefix}{file_count + 1}"
+                output_stem = f"{output_prefix}{file_count:02}"
                 output_fullpath = input_fullpath.parent / output_stem
-                if not overwrite:
+                '''if not overwrite:
                     if output_fullpath.exists():
-                        raise FileExistsError(f"{output_fullpath=} exists!")
+                        raise FileExistsError(f"{output_fullpath=} exists!")'''
                 output_count = 0
-                with output_fullpath.open('w') as wf:
+                with output_fullpath.open(mode=mode) as wf:
+                    putout_files.append(output_stem)
                     while output_count < n:
                         input_line = fi.readline()
                         if not input_line:
@@ -242,4 +245,18 @@ def split_file(n: int, input_fullpath=DATA_FULLPATH, encoding='utf8', output_pre
                         output_count += 1
     except EndLoop:
         pass
-            
+    return putout_files
+
+def check_split_file(n: int, prefix='y_'):
+    cmd = f"split -l {n} -d {DATA_FILE} {prefix}"
+    wd = DATA_DIR
+    run_cmd(cmd, cwd=wd)
+    run_files = [f.stem for f in wd.glob(f"{prefix}*")]
+    breakpoint()
+    my_output_files = split_file(n)
+    assert len(run_files) == len(my_output_files)
+    for n in range(len(run_files)):
+        cmd = f"diff {run_files[n]} {my_output_files[n]}"
+        rt = run_cmd(cmd)
+        assert not rt
+    
