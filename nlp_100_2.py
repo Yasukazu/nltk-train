@@ -85,13 +85,47 @@ class HighTemp:
         
     # 17. １列目の文字列の異なり
     def get_col1_set(self) -> set[str]:
-        '''1 列 目 の 文字 列 の 種類 （ 異なる 文字 列 の 集合 ） を 求め よ ．
+        '''1 列 目 の 文字 列 の 種類 （ 異なる 文字 列 の 集合 ） を         def encode_s(s: str):
+                    return s.encode(encoding='EUC-JP')
+め よ ．
         確認 に は sort ,   uniq コマンド を 用いよ ．
+        北海道 01 京都府 26
+青森県 02 大阪府 27
+岩手県 03 兵庫県 28
+宮城県 04 奈良県 29
+秋田県 05 和歌山県 30
+山形県 06 鳥取県 31
+福島県 07 島根県 32
+茨城県 08 岡山県 33
+栃木県 09 広島県 34
+群馬県 10 山口県 35
+埼玉県 11 徳島県 36
+千葉県 12 香川県 37
+東京都 13 愛媛県 38
+神奈川県 14 高知県 39
+新潟県 15 福岡県 40
+富山県 16 佐賀県 41
+石川県 17 長崎県 42
+福井県 18 熊本県 43
+山梨県 19 大分県 44
+長野県 20 宮崎県 45
+岐阜県 21 鹿児島県 46
+静岡県 22 沖縄県 47
+愛知県 23
+三重県 24
+滋賀県 25
         Returns
         -------
         set[str]
         '''
-        return set(self.df.iloc[:,0:1]['pref'])
+        col1_set = set(self.df.iloc[:,0:1]['pref'])
+        def encode_s(s: str):
+            return s.encode(encoding='EUC-JP')
+        breakpoint()
+        euc_list = [c.encode(encoding='EUC-JP') for c in col1_set]
+        sorted_list = sorted(euc_list)
+        decoded_list = [c.decode('EUC-JP') for c in sorted_list]
+        return decoded_list
 
 # 10. Count lines/行数のカウント
 def count_lines(f: str, encoding='utf8'):
@@ -156,7 +190,7 @@ def col_lines(input_=DATA_FULLPATH, outputs=('col1.txt', 'col2.txt'), encoding='
     for n in range(2):
         assert len(output_lines[n]) == line_count
     # check by a command
-    cmd = "cut -d '\t' -f 1,2 " + str(input)
+    cmd = "cut -f 1,2 " + str(input)
     cmd_result = run_cmd(cmd)
     assert cmd_result
     cmd_lines = cmd_result.split('\n')
