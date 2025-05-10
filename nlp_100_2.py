@@ -9,9 +9,6 @@ Created on Fri May  9 08:46:07 2025
 hightemp.txtは，日本の最高気温の記録を「都道府県」「地点」「℃」「日」のタブ区切り形式で格納したファイルである．以下の処理を行うプログラムを作成し，hightemp.txtを入力ファイルとして実行せよ．さらに，同様の処理をUNIXコマンドでも実行し，プログラムの実行結果を確認せよ．
 
 
-
-
-
 17. １列目の文字列の異なり
 
 1列目の文字列の種類（異なる文字列の集合）を求めよ．確認にはsort, uniqコマンドを用いよ．
@@ -49,8 +46,53 @@ def run_cmd(cmd: str, cwd=DATA_DIR):
 
     """
     return run(cmd, capture_output=True, shell=True, text=True, check=True, cwd=cwd).stdout
+import pandas as pd
+class HighTemp:
+    def __init__(self, data_fullpath=DATA_FULLPATH):
+        self.df = df = pd.read_csv(data_fullpath, delimiter='\t', names=['pref', 'city','temp', 'date'])
+    
+    @property
+    def line_count(self):
+        '''count lines
+        Returns
+        -------
+        int
+            line count
+        '''
+        return len(self.df)
+    
+    def save_to_csv(self, name: str, sep=',', index=False, with_bom=False):
+        '''save to a csv format file
+        Parameters
+        ----------
+        name : str
+            filename
+        sep : str, optional
+            The default is ','.
+        index : bool, optional
+            save also index or not
+            The default is False.
+        with_bom: bool, optional
+            save with preceding BOM character
+            dafault False
+        Returns
+        -------
+        None.
+        '''
+        self.df.to_csv(name, sep=sep, index=index, encoding='utf-8-sig' if with_bom else 'utf-8')
+        
+    def extract_cols(self, cols: range):
+        '''extract columns represented in a range
+        '''
+        return self.df.iloc[:, cols.start:cols.stop]
+        
+        
+    
+    
+        
+    
 
-# 10. 行数のカウント
+# 10. Count lines/行数のカウント
 def count_lines(f: str, encoding='utf8'):
     '''Count lines.  Check with `wc`.
     '''
@@ -62,9 +104,11 @@ def count_lines(f: str, encoding='utf8'):
     cmd_result = run_cmd(f"wc {f}")
     assert n == int(cmd_result.split()[0])
     return n
-# 11. タブをスペースに置換
+
+# 11. Convert tab to space / タブをスペースに置換
 def conv_tab_to_spc(f: str, encoding='utf8'):
-    '''タブ1文字につきスペース1文字に置換せよ．確認にはsedコマンド，trコマンド，もしくはexpandコマンドを用いよ．
+    '''タブ1文字につきスペース1文字に置換せよ．
+    確認にはsedコマンド，trコマンド，もしくはexpandコマンドを用いよ．
     '''
     pth = Path(f)
     lines = []
