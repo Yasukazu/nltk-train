@@ -4,14 +4,11 @@
 Created on Fri May  9 08:46:07 2025
 @author: yasukazu
 
-第2章: UNIXコマンドの基礎
+Section 2: basic UNIX commands
 
 hightemp.txtは，日本の最高気温の記録を「都道府県」「地点」「℃」「日」のタブ区切り形式で格納したファイルである．以下の処理を行うプログラムを作成し，hightemp.txtを入力ファイルとして実行せよ．さらに，同様の処理をUNIXコマンドでも実行し，プログラムの実行結果を確認せよ．
 
 
-17. １列目の文字列の異なり
-
-1列目の文字列の種類（異なる文字列の集合）を求めよ．確認にはsort, uniqコマンドを用いよ．
 
 18. 各行を3コラム目の数値の降順にソート
 
@@ -86,11 +83,15 @@ class HighTemp:
         '''
         return self.df.iloc[:, cols.start:cols.stop]
         
-        
-    
-    
-        
-    
+    # 17. １列目の文字列の異なり
+    def get_col1_set(self) -> set[str]:
+        '''1 列 目 の 文字 列 の 種類 （ 異なる 文字 列 の 集合 ） を 求め よ ．
+        確認 に は sort ,   uniq コマンド を 用いよ ．
+        Returns
+        -------
+        set[str]
+        '''
+        return set(self.df.iloc[:,0:1]['pref'])
 
 # 10. Count lines/行数のカウント
 def count_lines(f: str, encoding='utf8'):
@@ -303,4 +304,5 @@ def check_split_file(n: int, prefix='y_'):
         cmd = f"diff {run_files[n]} {my_output_files[n]}"
         rt = run_cmd(cmd)
         assert not rt
-    
+
+
