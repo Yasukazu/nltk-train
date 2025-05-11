@@ -23,6 +23,8 @@ import sys, os
 from subprocess import run
 from pathlib import Path
 
+import pandas as pd
+
 DATA_DIR = Path('DATA')
 DATA_FILE = 'hightemp.txt'
 DATA_FULLPATH = DATA_DIR / DATA_FILE
@@ -43,7 +45,12 @@ def run_cmd(cmd: str, cwd=DATA_DIR):
 
     """
     return run(cmd, capture_output=True, shell=True, text=True, check=True, cwd=cwd).stdout
-import pandas as pd
+
+def str_encode(s: str, encoding='EUC-JP'):
+    encoded = s.encode(encoding=encoding)
+    return encoded
+
+
 class HighTemp:
     def __init__(self, data_fullpath=DATA_FULLPATH):
         self.df = df = pd.read_csv(data_fullpath, delimiter='\t', names=['pref', 'city','temp', 'date'])
@@ -84,48 +91,23 @@ class HighTemp:
         return self.df.iloc[:, cols.start:cols.stop]
         
     # 17. １列目の文字列の異なり
-    def get_col1_set(self) -> set[str]:
+    def get_col1_set(self, comp_func=str_encode) -> set[str]:
         '''1 列 目 の 文字 列 の 種類 （ 異なる 文字 列 の 集合 ） を         def encode_s(s: str):
                     return s.encode(encoding='EUC-JP')
 め よ ．
         確認 に は sort ,   uniq コマンド を 用いよ ．
-        北海道 01 京都府 26
-青森県 02 大阪府 27
-岩手県 03 兵庫県 28
-宮城県 04 奈良県 29
-秋田県 05 和歌山県 30
-山形県 06 鳥取県 31
-福島県 07 島根県 32
-茨城県 08 岡山県 33
-栃木県 09 広島県 34
-群馬県 10 山口県 35
-埼玉県 11 徳島県 36
-千葉県 12 香川県 37
-東京都 13 愛媛県 38
-神奈川県 14 高知県 39
-新潟県 15 福岡県 40
-富山県 16 佐賀県 41
-石川県 17 長崎県 42
-福井県 18 熊本県 43
-山梨県 19 大分県 44
-長野県 20 宮崎県 45
-岐阜県 21 鹿児島県 46
-静岡県 22 沖縄県 47
-愛知県 23
-三重県 24
-滋賀県 25
         Returns
         -------
         set[str]
         '''
         col1_set = set(self.df.iloc[:,0:1]['pref'])
-        def encode_s(s: str):
-            return s.encode(encoding='EUC-JP')
-        breakpoint()
-        euc_list = [c.encode(encoding='EUC-JP') for c in col1_set]
+        sorted_col1 = sorted(col1_set, key=comp_func)
+        return sorted_col1
+        '''euc_list = [c.encode(encoding='EUC-JP') for c in col1_set]
         sorted_list = sorted(euc_list)
         decoded_list = [c.decode('EUC-JP') for c in sorted_list]
-        return decoded_list
+        return decoded_list'''
+
 
 # 10. Count lines/行数のカウント
 def count_lines(f: str, encoding='utf8'):
@@ -340,3 +322,41 @@ def check_split_file(n: int, prefix='y_'):
         assert not rt
 
 
+if __name__ == '__main__':
+    ht = HighTemp()
+    class KenNumber:
+        def __init__(self, kennumber_csv = DATA_DIR / 'kennumber.csv'):
+            self.df = pd.read_csv(kennumber_csv, delimiter=',', header=0)# names=['pref', 'kenmei'])                  
+        def __str__(self):
+            return self.df
+    kn = KenNumber()
+    def df_to_dict(df):
+        """Converts a DataFrame to a dictionary using the first row as keys and the second row as values.
+
+        Args:
+            df: Pandas DataFrame.
+
+        Returns:
+            A dictionary where the first row is keys and the second row is values.
+            Returns an empty dictionary if the DataFrame has less than two rows or no columns.
+        """
+        assert df.shape[0] >= 2 and df.shape[1] >= 2
+        keys = df.iloc[:, 0].tolist()
+        values = df.iloc[:, 1].tolist()
+        zipped = zip(keys, values)
+        dic = dict(zipped)
+        return dic
+    ken_to_num = df_to_dict(kn.df)
+    def ken_num_comp(s: str):
+        """Convert a string to its corresponding number using the ken_to_num dictionary.
+
+        Args:
+            s: A string representing a prefecture name.
+
+        Returns:
+            The corresponding number if found in the dictionary, otherwise returns the original string.
+        """
+        return ken_to_num[s] # if s in ken_to_num else s  
+    sorted_col1 = ht.get_col1_set(comp_func=ken_num_comp)
+    from pprint import pp
+    pp(sorted_col1)
