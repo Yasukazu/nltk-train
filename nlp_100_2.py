@@ -10,9 +10,6 @@ hightemp.txtは，日本の最高気温の記録を「都道府県」「地点�
 
 
 
-18. 各行を3コラム目の数値の降順にソート
-
-各行を3コラム目の数値の逆順で整列せよ（注意: 各行の内容は変更せずに並び替えよ）．確認にはsortコマンドを用いよ（この問題はコマンドで実行した時の結果と合わなくてもよい）．
 
 19. 各行の1コラム目の文字列の出現頻度を求め，出現頻度の高い順に並べる
 
@@ -29,7 +26,7 @@ DATA_DIR = Path('DATA')
 DATA_FILE = 'hightemp.txt'
 DATA_FULLPATH = DATA_DIR / DATA_FILE
 
-def run_cmd(cmd: str, cwd=DATA_DIR):
+def run_cmd(cmd: str, cwd=DATA_DIR, preceding='LC_ALL=ja_JP.UTF-8'):
     """Execute a command in a terminal
     
 
@@ -44,7 +41,7 @@ def run_cmd(cmd: str, cwd=DATA_DIR):
         stdout of the result of the executed command
 
     """
-    return run(cmd, capture_output=True, shell=True, text=True, check=True, cwd=cwd).stdout
+    return run(preceding + ' ' + cmd, capture_output=True, shell=True, text=False, check=True, cwd=cwd).stdout
 
 def str_encode(s: str, encoding='EUC-JP'):
     encoded = s.encode(encoding=encoding)
@@ -103,11 +100,36 @@ class HighTemp:
         col1_set = set(self.df.iloc[:,0:1]['pref'])
         sorted_col1 = sorted(col1_set, key=comp_func)
         return sorted_col1
-        '''euc_list = [c.encode(encoding='EUC-JP') for c in col1_set]
-        sorted_list = sorted(euc_list)
-        decoded_list = [c.decode('EUC-JP') for c in sorted_list]
-        return decoded_list'''
+    #18. 各行を3コラム目の数値の降順にソート
+    #各行を3コラム目の数値の逆順で整列せよ（注意: 各行の内容は変更せずに並び替えよ）．確認にはsortコマンドを用いよ（この問題はコマンドで実行した時の結果と合わなくてもよい）．
+    def sort_by_col3(self, asc=False):#, comp_func=str_encode):
+        '''各行を3コラム目の数値の降順にソートせよ
+        確認にはsortコマンドを用いよ
+        Returns
+        -------
+        iterator[str]
+            sorted lines
+        '''
+        for r in range(self.df.shape[0]):
+            yield self.df.sort_values(by="temp", ascending=asc).iloc[r, :]#.to_list()
 
+
+# check get_col1_set using commands
+def check_get_col1_set(ht: HighTemp, comp_func=str_encode, encoding='EUC-JP', data_filename=DATA_FILE):
+    '''Check get_col1_set using commands
+    '''
+    sorted_col1 = ht.get_col1_set(comp_func=comp_func)#, encoding=encoding)
+    cmd = f"cut -f 1 {data_filename} |iconv -f UTF-8 -t EUC-JP| sort -u |iconv -f EUC-JP -t UTF-8"# | uniq"
+    cmd_result = run_cmd(cmd, preceding='LC_COLLATE=ja_JP.UTF-8').decode()
+    cmd_lines = cmd_result.split('\n')
+    if cmd_lines[-1] == '':
+        cmd_lines = cmd_lines[:-1]
+    assert len(cmd_lines) == len(sorted_col1)
+    cmd_lines_set = set(cmd_lines)
+    sorted_col1_set = set(sorted_col1)  
+    assert cmd_lines_set == sorted_col1_set
+    # for n in range(len(cmd_lines)):assert cmd_lines[n] == sorted_col1[n]
+    return sorted_col1
 
 # 10. Count lines/行数のカウント
 def count_lines(f: str, encoding='utf8'):
@@ -323,6 +345,9 @@ def check_split_file(n: int, prefix='y_'):
 
 
 if __name__ == '__main__':
+    import sys
+    check_get_col1_set(ht=HighTemp())
+    sys.exit(0)
     ht = HighTemp()
     class KenNumber:
         def __init__(self, kennumber_csv = DATA_DIR / 'kennumber.csv'):
@@ -330,6 +355,7 @@ if __name__ == '__main__':
         def __str__(self):
             return self.df
     kn = KenNumber()
+    
     def df_to_dict(df):
         """Converts a DataFrame to a dictionary using the first row as keys and the second row as values.
 
