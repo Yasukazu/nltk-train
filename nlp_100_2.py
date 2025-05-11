@@ -11,9 +11,6 @@ hightemp.txtは，日本の最高気温の記録を「都道府県」「地点�
 
 
 
-19. 各行の1コラム目の文字列の出現頻度を求め，出現頻度の高い順に並べる
-
-各行の1列目の文字列の出現頻度を求め，その高い順に並べて表示せよ．確認にはcut, uniq, sortコマンドを用いよ．
 
 """
 import sys, os
@@ -112,6 +109,31 @@ class HighTemp:
         '''
         for r in range(self.df.shape[0]):
             yield self.df.sort_values(by="temp", ascending=asc).iloc[r, :]#.to_list()
+    
+    #19. 各行の1コラム目の文字列の出現頻度を求め，出現頻度の高い順に並べる
+    #各行の1列目の文字列の出現頻度を求め，その高い順に並べて表示せよ．確認にはcut, uniq, sortコマンドを用いよ．
+    def freq_sort(self):
+        '''各行の1コラム目の文字列の出現頻度を求め，出現頻度の高い順に並べる
+        確認にはcut, uniq, sortコマンドを用いよ
+        Returns
+        -------
+        iterator[str]
+            sorted lines
+        '''
+        pref_list = self.df.iloc[:,0:1]['pref'].to_list() #value_counts()
+        from collections import defaultdict
+        pref_count = defaultdict(int)
+        for pref in pref_list:
+            pref_count[pref] += 1
+        max_count = max(pref_count.values())
+        pref_list = {}
+        while max_count:
+            pref_list[max_count] = set([k for k, v in pref_count.items() if v == max_count])
+            max_count -= 1
+        return pref_list
+        #freq = pd.Series(pref_count).sort_values(ascending=False)
+        #for r in freq.index:            yield r, freq[r]
+
 
 
 # check get_col1_set using commands
@@ -346,9 +368,12 @@ def check_split_file(n: int, prefix='y_'):
 
 if __name__ == '__main__':
     import sys
-    check_get_col1_set(ht=HighTemp())
-    sys.exit(0)
+    from pprint import pp
+    #check_get_col1_set(ht=HighTemp())
     ht = HighTemp()
+    freq_by_col1 = ht.freq_sort()
+    pp(freq_by_col1)
+    sys.exit(0)
     class KenNumber:
         def __init__(self, kennumber_csv = DATA_DIR / 'kennumber.csv'):
             self.df = pd.read_csv(kennumber_csv, delimiter=',', header=0)# names=['pref', 'kenmei'])                  
