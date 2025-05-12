@@ -7,11 +7,6 @@ Created on Fri May  9 08:46:07 2025
 Section 2: basic UNIX commands
 
 hightemp.txtは，日本の最高気温の記録を「都道府県」「地点」「℃」「日」のタブ区切り形式で格納したファイルである．以下の処理を行うプログラムを作成し，hightemp.txtを入力ファイルとして実行せよ．さらに，同様の処理をUNIXコマンドでも実行し，プログラムの実行結果を確認せよ．
-
-
-
-
-
 """
 import sys, os
 from subprocess import run
@@ -25,7 +20,6 @@ DATA_FULLPATH = DATA_DIR / DATA_FILE
 
 def run_cmd(cmd: str, cwd=DATA_DIR, preceding='LC_ALL=ja_JP.UTF-8'):
     """Execute a command in a terminal
-    
 
     Parameters
     ----------
