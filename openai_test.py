@@ -1,7 +1,13 @@
+import dotenv
 from openai import OpenAI
+from pathlib import Path
 
+secret_fullpath = Path("/etc/secrets/.env")
+config = dotenv.dotenv_values(secret_fullpath)
+openai_client_key = config["OPENAI_API_KEY"]
+assert openai_client_key, "OPENAI_API_KEY not found in .env file"
 client = OpenAI(
-  api_key="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"
+  api_key=openai_client_key
 )
 
 completion = client.chat.completions.create(
@@ -11,5 +17,9 @@ completion = client.chat.completions.create(
     {"role": "user", "content": "write a haiku about ai"}
   ]
 )
-
-print(completion.choices[0].message);
+breakpoint()
+line_break = completion.choices[0].message.content.find("\n")
+print(completion.choices[0].message.content[:line_break])
+print(completion.choices[0].message.content[line_break:])
+print(completion.choices[0].message.content)
+print(completion.choices[0].message)
