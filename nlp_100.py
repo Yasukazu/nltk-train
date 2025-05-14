@@ -5,6 +5,15 @@ Created on Thu May  8 15:42:27 2025
 
 @author: yasukazu
 """
+import sys, os
+import pandas as pd
+from subprocess import run
+from pathlib import Path
+
+
+DATA_DIR = Path('DATA')
+DATA_FILE = 'hightemp.txt'
+DATA_FULLPATH = DATA_DIR / DATA_FILE
 
 #07. テンプレートによる文生成
 def zino(x: int, y: str, z: float):
