@@ -1,0 +1,8 @@
+name: nltk
+dependencies:
+ - python=3.11
+ - openai
+ - python-dotenv
+ - flask
+ - gunicorn
+ - flask-cors
