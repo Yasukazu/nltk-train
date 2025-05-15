@@ -11,8 +11,8 @@ client = OpenAI(
 )
 # Initialize conversation history
 messages = [
-    {"role": "system", "content": "You are a kind caregiver."},
-    {"role": "user", "content": "Say something to cheer up an elder person."}
+    {"role": "system", "content": "You are an experienced engineer."},
+    {"role": "user", "content": "How do you think about nuclear power plants?"} # Say something to cheer up an elder person.
 ]
 completion = client.chat.completions.create(
   model="gpt-4o-mini",
@@ -28,7 +28,7 @@ messages.append({"role": "assistant", "content": assistant_response})
 print(assistant_response)
 
 # Continue the conversation
-messages.append({"role": "user", "content": "write another haiku about nature"})
+messages.append({"role": "user", "content": "what do you think about the future of nuclear power plants?"})
 completion = client.chat.completions.create(
     model="gpt-4o-mini",
     store=True,
