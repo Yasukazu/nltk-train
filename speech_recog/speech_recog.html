@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音声認識テスト</title>
+<body>
+    <h1>音声認識テスト</h1>
+    <p>音声認識を開始するには、下のボタンをクリックしてください。</p>
+    <button onclick="startRecognition()">音声認識開始</button>
+    <div class="result-box">
+      <fieldset>
+        <legend class="result-title">音声認識の結果</legend>
+        <p id="confidence"></p>
+        <textarea id="transcript" rows="4" cols="50" readonly></textarea>
+        <p id="result"></p>
+    </fieldset>
+
+    </div>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+<script src="static/js/speech_recog.js" defer></script>
+</body>
+</html>
